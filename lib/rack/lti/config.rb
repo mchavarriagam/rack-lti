@@ -3,17 +3,19 @@ require 'ims/lti'
 module Rack::LTI
   class Config < Hash
     DEFAULT = {
-      app_path:        '/',
-      config_path:     '/lti/config.xml',
-      description:     'An LTI Application.',
-      launch_path:     '/lti/launch',
+      app_path: '/',
+      config_path: '/lti/config.xml',
+      description: 'An LTI Application.',
+      launch_path: '/lti/launch',
+      request_key_field: 'oauth_consumer_key',
+      request_consumer_field: 'tool_consumer_instance_guid',
       nonce_validator: true,
-      redirect:        true,
-      success:         ->(lti, req, res) {
+      redirect: true,
+      success: ->(lti, req, res) {
         req.session['launch_params'] = lti if req.env['rack.session']
       },
-      time_limit:      60*60,
-      title:           'LTI App'
+      time_limit: 60*60,
+      title: 'LTI App'
     }
 
     def initialize(options = {})
