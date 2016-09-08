@@ -56,8 +56,11 @@ module Rack::LTI
           @app.call(env)
         end
       else
-        response = 'Invalid launch.'
-        [403, { 'Content-Type' => 'text/plain', 'Content-Length' => response.length.to_s }, [response]]
+        env[ActionDispatch::Flash::KEY] = ActionDispatch::
+            Flash::FlashHash.new(error: 'No valid LTI request.<br/>Please check your key/secret and documentation.')
+        res = Rack::Response.new
+        res.redirect(Rails.application.routes.url_helpers.user_session_path)
+        res.finish
       end
     end
 
