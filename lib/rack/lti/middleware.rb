@@ -38,11 +38,11 @@ module Rack::LTI
     end
 
     def launch_action(request, env)
-      provider = IMS::LTI::ToolProvider.new(
-        @config.consumer_key(request.values_at(*@config.request_key_field).join(':'),
-                             request.values_at(*@config.request_consumer_field).join(':')),
-        @config.consumer_secret(request.values_at(*@config.request_key_field).join(':'),
-                                request.values_at(*@config.request_consumer_field).join(':')),
+      key_value = request.values_at(*@config.request_key_field).join(':')
+      consumer_value = request.values_at(*@config.request_consumer_field).join(':')
+
+      provider = IMS::LTI::ToolProvider.new(@config.consumer_key(key_value, consumer_value, request),
+                                            @config.consumer_secret(key_value, consumer_value),
                                             request.params)
 
       if valid?(provider, request)
@@ -57,7 +57,8 @@ module Rack::LTI
         end
       else
         env[ActionDispatch::Flash::KEY] = ActionDispatch::
-            Flash::FlashHash.new(error: 'No valid LTI request.<br/>Please check your key/secret and documentation.')
+            Flash::FlashHash.new(error: ['No valid LTI request.', 'Please check your key/secret and documentation.']
+                                          .join('<br/>')) unless env[ActionDispatch::Flash::KEY].present?
         res = Rack::Response.new
         res.redirect(Rails.application.routes.url_helpers.user_session_path)
         res.finish
